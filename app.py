@@ -66,7 +66,7 @@ def prediction():
 
 @app.route("/telegram", methods=["GET", "POST"])
 def telegram():
-    domain_url = 'https://dsat-ft1-0e01.onrender.com'
+    domain_url = 'https://dsat-ft1-git-clone.onrender.com'
 
     # Delete existing webhook
     delete_webhook_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/deleteWebhook"
@@ -82,7 +82,7 @@ def telegram():
 @app.route("/stop_telegram",methods=["GET","POST"])
 def stop_telegram():
 
-    domain_url = 'https://dsat-ft1-0e01.onrender.com'
+    domain_url = 'https://dsat-ft1-git-clone.onrender.com'
 
     # The following line is used to delete the existing webhook URL for the Telegram bot
     delete_webhook_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/deleteWebhook"
