@@ -5,11 +5,14 @@ import requests
 import os
 import re
 
-# === Environment Variables ===
-os.environ['GROQ_API_KEY'] = os.getenv('groq')
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+# === Read from deployed environment variables ===
+GROQ_API_KEY = os.getenv("groq")  # you named it "groq" in the Render environment
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+if not GROQ_API_KEY:
+    raise ValueError("GROQ_API_KEY (env: groq) is not set.")
 if not TELEGRAM_BOT_TOKEN:
-    raise ValueError("TELEGRAM_BOT_TOKEN is not set in environment variables.")
+    raise ValueError("TELEGRAM_BOT_TOKEN is not set.")
 
 # === Flask App ===
 app = Flask(__name__)
@@ -30,7 +33,7 @@ def llama():
 @app.route("/llama_reply", methods=["GET", "POST"])
 def llama_reply():
     q = request.form.get("q")
-    client = Groq()
+    client = Groq(api_key=GROQ_API_KEY)
     completion = client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": q}]
@@ -44,7 +47,7 @@ def deepseek():
 @app.route("/deepseek_reply", methods=["GET", "POST"])
 def deepseek_reply():
     q = request.form.get("q")
-    client = Groq()
+    client = Groq(api_key=GROQ_API_KEY)
     completion = client.chat.completions.create(
         model="deepseek-r1-distill-llama-70b",
         messages=[{"role": "user", "content": q}]
@@ -79,22 +82,15 @@ def telegram():
     status = "The telegram bot is running. Please check @gemini_tt_bot" if webhook_response.status_code == 200 else "Failed to start the telegram bot."
     return render_template("telegram.html", status=status)
 
-@app.route("/stop_telegram",methods=["GET","POST"])
+@app.route("/stop_telegram", methods=["GET", "POST"])
 def stop_telegram():
-
     domain_url = 'https://dsat-ft1-git-clone.onrender.com'
 
-    # The following line is used to delete the existing webhook URL for the Telegram bot
     delete_webhook_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/deleteWebhook"
     webhook_response = requests.post(delete_webhook_url, json={"url": domain_url, "drop_pending_updates": True})
 
-    if webhook_response.status_code == 200:
-        # set status message
-        status = "The telegram bot is stopped. "
-    else:
-        status = "Failed to stop the telegram bot. Please check the logs."
-    
-    return(render_template("telegram.html", status=status))
+    status = "The telegram bot is stopped." if webhook_response.status_code == 200 else "Failed to stop the telegram bot."
+    return render_template("telegram.html", status=status)
 
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
@@ -103,7 +99,7 @@ def webhook():
         chat_id = update["message"]["chat"]["id"]
         query = update["message"]["text"]
 
-        client = Groq()
+        client = Groq(api_key=GROQ_API_KEY)
         completion_ds = client.chat.completions.create(
             model="deepseek-r1-distill-llama-70b",
             messages=[{"role": "user", "content": query}]
