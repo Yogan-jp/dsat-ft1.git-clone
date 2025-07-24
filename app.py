@@ -109,6 +109,9 @@ def webhook():
         send_message_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
         requests.post(send_message_url, json={"chat_id": chat_id, "text": response_message})
 
+@app.route('/sepia', methods=['GET', 'POST'])
+def sepia():
+    return render_template("sepia_hf.html")
     return 'ok', 200
 
 if __name__ == "__main__":
